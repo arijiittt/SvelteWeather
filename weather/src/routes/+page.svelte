@@ -1,15 +1,27 @@
 <script>
     import { writable } from 'svelte/store';
-    
+
     // Define writable stores for weather and city
     let weather = writable(null);
     let city = writable('');
 
+    // Access environment variables
+    const API_URL = import.meta.env.VITE_API_URL;
+    const API_KEY = import.meta.env.VITE_API_KEY;
+
     // Fetch weather data for a given city name and update the weather store
     const fetch_weather = async (cityName) => {
-        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=cb683232519a768bc3326a68dc742f4b`);
-        const data = await response.json();
-        weather.set(data);
+        try {
+            const response = await fetch(`${API_URL}?q=${cityName}&appid=${API_KEY}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            weather.set(data);
+        } catch (error) {
+            console.error('There has been a problem with your fetch operation:', error);
+            weather.set(null);  // Set to null if there was an error
+        }
     };
 
     // Handle the search action
@@ -25,11 +37,15 @@
 </div>
 <div class="weatherResult">
     {#if $weather}  <!-- Only display weather info if it exists -->
-        <div>
-            City: {$weather.name}
-            <br>
-            Temperature: {$weather.main.temp}°K
-        </div>
+        {#if $weather.name && $weather.main} <!-- Check if data is valid -->
+            <div>
+                City: {$weather.name}
+                <br>
+                Temperature: {Math.round($weather.main.temp-273)}°C
+            </div>
+        {:else}
+            <p>Invalid weather data received.</p>
+        {/if}
     {:else}
         <p>No weather data available.</p>
     {/if}
