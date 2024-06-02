@@ -1,52 +1,126 @@
 <script>
-    import { writable } from 'svelte/store';
+	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 
-    // Define writable stores for weather and city
-    let weather = writable(null);
-    let city = writable('');
+	// Define writable stores for city and weather data
+	let city = writable('');
+	let currentWeather = writable(null);
+	let previousWeather = writable(null);
 
-    // Access environment variables
-    const API_URL = import.meta.env.VITE_API_URL;
-    const API_KEY = import.meta.env.VITE_API_KEY;
+	let previousCity = '';
+	let currentCity = '';
 
-    // Fetch weather data for a given city name and update the weather store
-    const fetch_weather = async (cityName) => {
-        try {
-            const response = await fetch(`${API_URL}?q=${cityName}&appid=${API_KEY}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            weather.set(data);
-        } catch (error) {
-            console.error('There has been a problem with your fetch operation:', error);
-            weather.set(null);  // Set to null if there was an error
-        }
-    };
+	const API_URL = import.meta.env.VITE_API_URL;
+	const API_KEY = import.meta.env.VITE_API_KEY;
 
-    // Handle the search action
-    const Searched = () => {
-        weather.set(null);  // Reset weather data
-        fetch_weather($city);  // Fetch weather data for the current city
-    };
+	const fetch_weather = async (cityName) => {
+		try {
+			const response = await fetch(`${API_URL}?q=${cityName}&appid=${API_KEY}`);
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+			return await response.json();
+		} catch (error) {
+			console.error('There has been a problem with your fetch operation:', error);
+			return null; // Return null if there was an error
+		}
+	};
+
+	const Searched = async () => {
+		previousCity = currentCity;
+		currentCity = $city;
+
+		const newWeather = await fetch_weather(currentCity);
+		const oldWeather = await fetch_weather(previousCity);
+
+		previousWeather.set(oldWeather);
+		currentWeather.set(newWeather);
+	};
+
+	onMount(() => {
+		console.log('Component mounted');
+	});
 </script>
 
-<div class="weatherContainer">
-    <input type="text" bind:value={$city} placeholder="Enter City Name...">  <!-- Bind the input value to the city store -->
-    <button on:click={Searched}>Search</button>
+<div class="appContainer">
+	<div class="top">
+		<h5>Weather Application</h5>
+		<div class="input-field">
+			<input type="text" bind:value={$city} placeholder="Enter city" />
+			<button on:click={Searched}>Search</button>
+		</div>
+	</div>
+	<div class="values-display">
+		{#if $currentWeather}
+			<div class="currentResult">
+				<h2>Current City Weather:</h2>
+				<div>
+					City: {$currentWeather.name}
+					<br />
+					Temperature: {Math.round($currentWeather.main.temp - 273)}°C
+				</div>
+			</div>
+		{/if}
+		{#if $previousWeather}
+			<div class="previousResult">
+				<h2>Previous City Weather:</h2>
+				<div>
+					City: {$previousWeather.name}
+					<br />
+					Temperature: {Math.round($previousWeather.main.temp - 273)}°C
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>
-<div class="weatherResult">
-    {#if $weather}  <!-- Only display weather info if it exists -->
-        {#if $weather.name && $weather.main} <!-- Check if data is valid -->
-            <div>
-                City: {$weather.name}
-                <br>
-                Temperature: {Math.round($weather.main.temp-273)}°C
-            </div>
-        {:else}
-            <p>Invalid weather data received.</p>
-        {/if}
-    {:else}
-        <p>No weather data available.</p>
-    {/if}
-</div>
+
+<style>
+	* {
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	}
+  .appContainer{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+	.top {
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 20px;
+		align-items: center;
+		background-color: aqua;
+		width: 95vw;
+		border-radius: 50px 50px 0px 00px;
+	}
+	.input-field input,
+	button {
+		width: 150px, 50px;
+		border-radius: 20px;
+		font-size: 12px;
+		border-style: none;
+		padding: 8px 16px;
+	}
+	.values-display {
+		padding: 20px;
+		background-color: hotpink;
+		width: 95vw;
+		display: flex;
+		justify-content: space-evenly;
+		align-items: center;
+		border-radius: 0px 0px 50px 50px;
+	}
+
+	.currentResult {
+		width: 40%;
+		background-color: rgba(0, 0, 0, 0.1);
+		padding: 20px;
+		border-radius: 20px;
+	}
+	.previousResult {
+		width: 40%;
+		background-color: rgba(0, 0, 0, 0.1);
+		padding: 20px;
+		border-radius: 20px;
+	}
+</style>
