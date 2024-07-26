@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
 
-  // Define writable stores for city and weather data
   let city = writable("");
   let currentWeather = writable(null);
   let previousWeather = writable(null);
@@ -25,7 +24,7 @@
         "There has been a problem with your fetch operation:",
         error
       );
-      return null; // Return null if there was an error
+      return null;
     }
   };
 
@@ -47,7 +46,7 @@
 
 <div class="appContainer">
   <div class="top">
-    <h5>Weather Application</h5>
+    <h3>Weather Application</h3>
     <div class="input-field">
       <input type="text" bind:value={$city} placeholder="Enter city" />
       <button on:click={Searched}>Search</button>
@@ -55,7 +54,7 @@
   </div>
   <div class="values-display">
     {#if $currentWeather}
-      <div class="currentResult">
+      <div class="result currentResult">
         <h2>Current Search:</h2>
         <div>
           <img
@@ -64,7 +63,6 @@
           />
           <br />
           City: {$currentWeather.name}
-
           <br />
           {$currentWeather.weather[0].main}
           <br />
@@ -73,16 +71,16 @@
       </div>
     {/if}
     {#if $previousWeather}
-      <div class="previousResult">
-        <h2>last Searched:</h2>
+      <div class="result previousResult">
+        <h2>Last Searched:</h2>
         <div>
           <img
             src="src/routes/images/{$previousWeather.weather[0].main}.png"
             alt=""
           />
           <br />
-          <br />
           City: {$previousWeather.name}
+          <br />
           {$previousWeather.weather[0].main}
           <br />
           Temperature: {Math.round($previousWeather.main.temp - 273)}°C
@@ -95,54 +93,75 @@
 <style>
   * {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
   .appContainer {
     display: flex;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
+    background-color: #f0f4f8;
+    min-height: 100vh;
+    padding: 20px;
   }
   .top {
+    background: rgb(102,197,255);
+    background: radial-gradient(circle, rgba(102,197,255,1) 0%, rgba(59,233,255,1) 100%);color: white;
     padding: 20px;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+  .input-field {
     display: flex;
-    flex-direction: column;
-    row-gap: 20px;
-    align-items: center;
-    background-color: aqua;
-    width: 95vw;
-    border-radius: 50px 50px 0px 00px;
+    justify-content: center;
+    margin-top: 10px;
   }
   .input-field input,
   button {
-    width: 150px, 50px;
-    border-radius: 20px;
-    font-size: 12px;
-    border-style: none;
-    padding: 8px 16px;
+    font-size: 16px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  .input-field button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+  }
+  .input-field button:hover {
+    background-color: #218838;
   }
   .values-display {
+    background-color: white;
+    width: 100%;
+    max-width: 600px;
     padding: 20px;
-    background-color: hotpink;
-    width: 95vw;
+    border-radius: 0 0 20px 20px;
     display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    border-radius: 0px 0px 50px 50px;
+    justify-content: space-around;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
-
-  .currentResult {
-    width: 40%;
-    background-color: rgba(0, 0, 0, 0.1);
+  .result {
+    width: 45%;
+    text-align: center;
     padding: 20px;
-    border-radius: 20px;
+    background: rgb(243,252,193);
+    background: linear-gradient(176deg, rgba(243,252,193,1) 0%, rgba(201,255,174,1) 50%, rgba(145,255,158,1) 100%);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-  .previousResult {
-    width: 40%;
-    background-color: rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    border-radius: 20px;
+  .result h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
   }
-  img{
+  img {
     height: 50px;
     width: auto;
+    margin-bottom: 10px;
   }
 </style>
